@@ -1,13 +1,109 @@
 ---
-title: Hello World
-description: Your first document
+title: Présentation du projet
+description: Moderniser et alléger les charges administratives
 ---
 
-Welcome to the docs! You can start writing documents in `/content/docs`.
+De nombreuses écoles passent encore beaucoup de temps sur des tâches administratives qui pourraient pourtant être simplifiées. L'objectif de l'outil est de moderniser et d'alléger ces charges, grâce à une plateforme accessible, inspirée de ce qui existe déjà dans les pays anglophones et développés, mais adaptée à nos réalités.
 
-## What is Next?
+## Problèmes à résoudre
 
-<Cards>
-  <Card title="Learn more about Next.js" href="https://nextjs.org/docs" />
-  <Card title="Learn more about Fumadocs" href="https://fumadocs.dev" />
-</Cards>
+### 1. Emplois du temps
+
+La création d'un emploi du temps demande souvent plusieurs jours et doit être refaite dès qu'un imprévu apparaît.
+L'outil permettrait, en quelques heures seulement, de générer un planning clair et cohérent, tout en donnant une vision immédiate :
+
+* des salles disponibles,
+* des créneaux libres,
+* des possibilités de réorganisation en cas de cours reportés, absences ou changements de dernière minute.
+
+L'objectif est de rendre cette tâche rapide, transparente et facilement ajustable.
+
+### 2. Calcul et gestion des notes
+
+Après la correction, l'enseignant ne devrait avoir qu'une seule action : **entrer les notes**.
+Le reste serait automatisé :
+
+* génération de moyennes,
+* calculs cohérents et sans erreurs,
+* production automatique des relevés,
+* statistiques prêtes à l'usage (progression, difficultés, classement si nécessaire).
+
+Cela réduit la charge de travail, les risques d'erreurs et le temps passé sur des tableaux manuels.
+
+### 3. Communication avec les parents
+
+Le suivi entre l'école et les familles reste souvent fragile : messages importants non transmis (retards, cours annulés, comportement de l'enfant…), parents qui découvrent les difficultés de l'enfant uniquement lors des compositions — quand il est déjà trop tard pour agir.
+L'outil propose une approche simple, inspirée des solutions comme Pronote :
+
+* devoirs partagés en ligne,
+* messages importants centralisés tant pour l'école elle même qu'aux parents,
+* suivi régulier de l'évolution scolaire : progrès, difficultés, travaux manqués, comportement.
+
+Un moyen de fluidifier la communication.
+
+## Notre approche
+
+Le potentiel du digital dans l'éducation est immense, mais l'objectif n'est pas de tout faire d'un coup.
+
+Le point de départ est clair :
+
+* simplifier les tâches longues, répétitives et coûteuses,
+* valider avec les écoles ce qui est réellement prioritaire,
+* évoluer avec leurs besoins.
+
+Chaque fonctionnalité sera pensée pour être simple, utile et adaptée à la réalité quotidienne.
+
+## Défis anticipés
+
+* **Connectivité** : l'outil sera optimisé pour fonctionner même dans des environnements réseau limités.
+* **Adhésion des écoles** : trouver des écoles pilotes reste essentiel pour tester, ajuster et démontrer l'impact concret.
+
+Le choix d'un modèle SaaS évite les installations complexes dans les établissements : maintenance centralisée, mises à jour automatiques et accès facile via mobile ou ordinateur.
+
+## Pourquoi ce projet fait sens
+
+Le secteur éducatif est essentiel et en pleine croissance : davantage d'élèves signifie davantage de charge pour les enseignants.
+Moderniser certains aspects ne vise pas à remplacer l'humain, mais à le soulager, à réduire le stress et à améliorer l'organisation.
+
+Il existe déjà des solutions efficaces ailleurs. L'objectif est d'en proposer une qui respecte les réalités locales, tout en apportant un vrai gain de temps, de clarté et d'efficacité.
+
+## Architecture technique
+
+### Backend : cœur du projet et priorité
+
+Le backend est la priorité, car il gère la logique métier et constitue la base de l'application.
+
+**Objectif initial : création des emplois du temps**
+
+* Interface simple pour remplir des **formulaires manuels**.
+* Nécessité d'une **modélisation solide des entités scolaires** :
+
+  * membres et contrôle d'accès (rôles, permissions),
+  * niveaux d'études, matières, classes, enseignants, années scolaires (promotion),
+  * capacité à supporter des **requêtes complexes** pour générer ou ajuster les emplois du temps.
+
+**Second objectif : calcul des moyennes et suivi des élèves**
+
+* Gérer différents modes de calcul (avec ou sans coefficient).
+* Déterminer automatiquement le passage en classe supérieure si possible.
+* Intégrer les premiers **hooks/signaux** pour identifier les élèves en difficulté.
+
+**Technologies et bonnes pratiques envisagées**
+
+* Réplication de base de données pour résilience et scalabilité.
+* Caching avec **Redis** pour améliorer les performances sur les requêtes fréquentes.
+* Gestion de tâches asynchrones avec **queues** pour traitement lourd ou différé.
+* Architecture **modulaire** : chaque bloc fonctionnel peut être ajouté, retiré ou désactivé sans impacter le reste de l'application, permettant de changer de priorités ou de fonctionnalités facilement.
+
+### Frontend : vitrine et expérience utilisateur
+
+* Pour l'instant, **aucune interface n'est prévue**, mais le choix s'oriente vers **React SPA**.
+* Deux options :
+
+  * partir de **zéro** pour un contrôle total,
+  * utiliser un **template dashboard** comme base.
+* Pourquoi React ?
+
+  * SPA simple, compatible avec la gestion des données et de l'authentification côté Laravel,
+  * plus populaire que Vue ou SolidJS → moins de risque de lacune technique.
+* Next.js est sûrement trop lourd pour cette approche purement SPA, mais reste une option si certaines pages statiques sont nécessaires plus tard.
