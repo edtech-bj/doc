@@ -5,3 +5,128 @@ description: description
 
 
 ### Gros titre
+
+```php
+<?php
+
+namespace Layers\Domain\Communication\Controllers;
+
+use App\Facades\CustomFunction;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Layers\Domain\Communication\Models\Notification;
+
+class NotificationController extends Controller
+{
+    protected function resolveScope(Request $request): string
+    {
+        return $request->get('scope', 'user_profile');
+    }
+
+    protected function getIds()
+    {
+        return [
+            'user_id' => Auth::id(),
+            'user_profile_id' => userProfile()->id,
+        ];
+    }
+
+    public function index(Request $request)
+    {
+        CustomFunction::checkUserAccess('view_notifications');
+
+        $ids = $this->getIds();
+
+        $companyId = $request->company_id;
+
+        $userNotifications = Notification::whereCompanyId($companyId)
+            ->unreadForUser($ids['user_id'])
+            ->get();
+
+        $profileNotifications = Notification::whereCompanyId($companyId)
+            ->unreadForUserProfile($ids['user_profile_id'])
+            ->get();
+
+        setClientViewRefreshParam('notifications');
+
+        return response()->json([
+            'user_notifications' => $userNotifications,
+            'profile_notifications' => $profileNotifications,
+        ]);
+    }
+
+
+    public function readAll(Request $request)
+    {
+        check(access: 'view_notifications');
+
+        $scope = $this->resolveScope($request);
+        $ids = $this->getIds();
+
+        transaction(function () use ($request, $scope, $ids) {
+
+            $query = Notification::whereCompanyId($request->company_id);
+
+            if ($scope === 'user_profile') {
+                $query->unreadForUserProfile($ids['user_profile_id']);
+            } else {
+                $query->unreadForUser($ids['user_id']);
+            }
+
+            $notifications = $query->get();
+
+            foreach ($notifications as $notif) {
+
+                if ($scope === 'user_profile') {
+                    $notif->read_user_profile_id = array_unique([
+                        ...$notif->read_user_profile_id,
+                        $ids['user_profile_id']
+                    ]);
+                } else {
+                    $notif->read_user_id = array_unique([
+                        ...$notif->read_user_id,
+                        $ids['user_id']
+                    ]);
+                }
+
+                $notif->save();
+            }
+        });
+
+        setClientViewRefreshParam('notifications');
+
+        return json(['status' => __('app.notificationcontroller.ok')]);
+    }
+
+    public function read(Request $request, $notification_id)
+    {
+        check(access: 'view_notifications');
+
+        $scope = $this->resolveScope($request);
+        $ids = $this->getIds();
+
+        transaction(function () use ($notification_id, $scope, $ids) {
+
+            $notif = Notification::findOrFail($notification_id);
+
+            if ($scope === 'user_profile') {
+                $notif->read_user_profile_id = array_unique([
+                    ...$notif->read_user_profile_id,
+                    $ids['user_profile_id']
+                ]);
+            } else {
+                $notif->read_user_id = array_unique([
+                    ...$notif->read_user_id,
+                    $ids['user_id']
+                ]);
+            }
+
+            $notif->save();
+        });
+
+        return json(['status' => __('app.notificationcontroller.ok')]);
+    }
+}
+
+```
